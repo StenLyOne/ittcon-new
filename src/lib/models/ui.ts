@@ -11,6 +11,7 @@ export type Stat = {
 };
 
 export type Card = {
+  id?: number;
   title: string;
   description: string;
   image: Media;
@@ -38,6 +39,6 @@ export type CardTile = {
   isImage: boolean;
   title: string;
   description: string;
-  cta?: Cta | Cta[]; 
+  cta?: Cta;
   image?: Media;
 };

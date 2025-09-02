@@ -4,5 +4,5 @@ export type Choose = {
   title: string;
   subtitle: string;
   text: string;
-  cards: Card;
+  cards: Card[];
 };

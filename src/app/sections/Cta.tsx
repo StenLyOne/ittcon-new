@@ -6,11 +6,11 @@ type Props = { data: CtaModel };
 export default function Cta({ data }: Props) {
   return (
     <section className="containerSection ">
-      <div className="relative px-10 py-45 rounded-[20px] overflow-hidden">
+      <div className="relative px-4 md:px-10 py-30 md:py-45 rounded-[20px] overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center "
           style={{
-            backgroundImage: `url(${data.image.formats.large?.url})`,
+            backgroundImage: `url(${data.image.formats?.large?.url})`,
           }}
         ></div>{" "}
         <div className="absolute inset-0 bg-black/20 " aria-hidden />

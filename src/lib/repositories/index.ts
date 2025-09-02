@@ -11,4 +11,7 @@ export const repos = {
   service: homeRepo.getService(),
   solutions: homeRepo.getSolutions(),
   cta: homeRepo.getCTA(),
+  choose: homeRepo.getChoose(),
+  faq: homeRepo.getFaq(),
+  partners: homeRepo.getPartners(),
 };

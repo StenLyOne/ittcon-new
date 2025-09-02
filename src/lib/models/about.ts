@@ -6,5 +6,5 @@ export type About = {
   text: string;
   media: Media;
   stats: Stat[];
-  cta: Cta;
+  ctas: Cta[];
 };

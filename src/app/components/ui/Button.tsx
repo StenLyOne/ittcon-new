@@ -14,8 +14,8 @@ const buttonStyles: Record<
     blue: "bg-transparent border border-blue text-blue hover:bg-blue hover:text-white",
   },
   default: {
-    white: "bg-white text-green-dark hover:bg-blue hover:text-white",
-    blue: "bg-blue text-white hover:bg-white text-blue",
+    white: "bg-white text-green-dark hover:bg-white/90 hover:text-green-dark/90",
+    blue: "bg-blue text-white hover:bg-blue/90 text-white/90",
   },
 };
 

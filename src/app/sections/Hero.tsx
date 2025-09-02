@@ -9,7 +9,7 @@ export default function Hero({ data }: Props) {
       {/* background */}
       <div
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${data.media.formats.large?.url})` }}
+        style={{ backgroundImage: `url(${data.media.formats?.large?.url})` }}
         aria-hidden
       />
       {/* overlay */}

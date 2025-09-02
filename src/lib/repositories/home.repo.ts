@@ -1,4 +1,4 @@
-import { title } from "process";
+// lib/repositories/home.repo.ts
 import { About } from "../models/about";
 import { CtaSection } from "../models/cta";
 import { Hero } from "../models/hero";
@@ -6,14 +6,18 @@ import { Service } from "../models/services";
 import { Solutions } from "../models/solutions";
 import { Cta } from "../models/ui";
 import { Choose } from "../models/choose";
+import { Faq } from "../models/faq";
+import { Partners } from "../models/partners";
 
-// ==== Заготовка под Strapi (включим позже) ====
+import type { HomePayload } from "../models/strapi";
+import { mapCta, mapMedia } from "../mappers/strapi";
+
 export class StrapiGetHomePage {
   constructor(private baseUrl: string, private token?: string) {}
 
-  private cached: any | null = null;
+  private cached: HomePayload | null = null;
 
-  private async fetchHome() {
+  private async fetchHome(): Promise<HomePayload> {
     if (this.cached) return this.cached;
 
     const url =
@@ -28,7 +32,9 @@ export class StrapiGetHomePage {
       `&populate[solutions][populate]=cta` +
       `&populate[cta][populate]=image` +
       `&populate[cta][populate]=cta` +
-      `&populate[choose][populate][cards][populate]=image`;
+      `&populate[choose][populate][cards][populate]=image` +
+      `&populate[faq][populate]=questions` +
+      `&populate[partners][populate]=image`;
 
     const res = await fetch(url, {
       headers: this.token ? { Authorization: `Bearer ${this.token}` } : {},
@@ -42,198 +48,108 @@ export class StrapiGetHomePage {
       );
     }
 
-    const json = await res.json();
-
-    this.cached = json?.data ?? {};
-
-    return this.cached; // 👈 обязательно возвращаем
+    // типизируем ответ
+    const json: { data: HomePayload } = await res.json();
+    this.cached = json.data;
+    return this.cached;
   }
 
   async getHero(): Promise<Hero> {
-    const data = await this.fetchHome();
-
-    const h = data.hero ?? {};
-
+    const { hero: h } = await this.fetchHome();
     return {
       title: h.title,
-      subtitle: h.subtitle,
-      text: h.text,
-      media: {
-        url: `${process.env.NEXT_PUBLIC_STRAPI_URL}${h.media.url ?? ""}`,
-        alt: h.media.alt ?? "",
-        formats: Object.fromEntries(
-          Object.entries(h.media.formats ?? {}).map(
-            ([key, value]: [string, any]) => [
-              key,
-              {
-                ...value,
-                url: `${process.env.NEXT_PUBLIC_STRAPI_URL}${value.url}`,
-              },
-            ]
-          )
-        ),
-      },
-      ctas:
-        h.ctas?.map((cta: Cta) => ({
-          label: cta.label,
-          href: cta.href,
-          variant: cta.variant as "default" | "arrow" | "border",
-          color: cta.color as "white" | "blue",
-        })) ?? [],
+      subtitle: h.subtitle ?? "",
+      text: h.text ?? "",
+      media: mapMedia(h.media),
+      ctas: (h.ctas ?? []).map(mapCta).filter(Boolean) as Cta[],
+    };
+  }
+
+  async getPartners(): Promise<Partners> {
+    const { partners } = await this.fetchHome();
+    return {
+      images: partners?.image?.map((p) => mapMedia(p)) ?? [],
     };
   }
 
   async getAbout(): Promise<About> {
-    const data = await this.fetchHome();
-    const about = data.about;
-
+    const { about } = await this.fetchHome();
     return {
       title: about.title,
-      subtitle: about.subtitle,
-      text: about.text,
-      media: {
-        url: `${process.env.NEXT_PUBLIC_STRAPI_URL}${about.media.url ?? ""}`,
-        alt: about.media.alt ?? "",
-        formats: Object.fromEntries(
-          Object.entries(about.media.formats ?? {}).map(
-            ([key, value]: [string, any]) => [
-              key,
-              {
-                ...value,
-                url: `${process.env.NEXT_PUBLIC_STRAPI_URL}${value.url}`,
-              },
-            ]
-          )
-        ),
-      },
-      stats: about.stats?.map((stat: any) => ({
-        value: stat.value,
-        label: stat.label,
+      subtitle: about.subtitle ?? "",
+      text: about.text ?? "",
+      media: mapMedia(about.media),
+      stats: (about.stats ?? []).map((s) => ({
+        value: s.value,
+        label: s.label,
       })),
-      cta: about.ctas,
+      ctas: (about.ctas ?? []).map(mapCta).filter(Boolean) as Cta[],
     };
   }
 
   async getService(): Promise<Service> {
-    const data = await this.fetchHome();
-    const service = data.services;
-
+    const { services: s } = await this.fetchHome();
     return {
-      title: service.title,
-      subtitle: service.subtitle,
-      text: service.text,
-      cards: service.cards?.map((card: any) => ({
-        icon: {
-          url: `${process.env.NEXT_PUBLIC_STRAPI_URL}${card.image.url ?? ""}`,
-          alt: card.image.alt ?? "",
-          formats: Object.fromEntries(
-            Object.entries(card.image.formats ?? {}).map(
-              ([key, value]: [string, any]) => [
-                key,
-                {
-                  ...value,
-                  url: `${process.env.NEXT_PUBLIC_STRAPI_URL}${value.url}`,
-                },
-              ]
-            )
-          ),
-        },
-        title: card.title,
-        description: card.description,
-      })),
+      title: s.title,
+      subtitle: s.subtitle ?? "",
+      text: s.text ?? "",
+      cards:
+        s.cards?.map((c) => ({
+          title: c.title,
+          description: c.description,
+          image: mapMedia(c.image),
+        })) ?? [],
     };
   }
 
   async getSolutions(): Promise<Solutions> {
-    const data = await this.fetchHome();
-    const solutions = data.solutions;
-
+    const { solutions } = await this.fetchHome();
     return {
-      blocks: solutions.map((solution: any) => {
-        const isImg = solution.is_image ?? false;
-        const image = isImg
-          ? {
-              url: `${process.env.NEXT_PUBLIC_STRAPI_URL}${
-                solution.image.url ?? ""
-              }`,
-              alt: solution.image.alt ?? "",
-              formats: Object.fromEntries(
-                Object.entries(solution.image.formats ?? {}).map(
-                  ([key, value]: [string, any]) => [
-                    key,
-                    {
-                      ...value,
-                      url: `${process.env.NEXT_PUBLIC_STRAPI_URL}${value.url}`,
-                    },
-                  ]
-                )
-              ),
-            }
-          : null;
-        return {
-          title: solution.title,
-          description: solution.description,
-          cta: solution.cta,
-          isImage: solution.is_image,
-          isFullWidth: solution.is_full_width,
-          image,
-        };
-      }),
+      blocks: solutions.map((s) => ({
+        title: s.title,
+        description: s.description,
+        cta: mapCta(s.cta),
+        isImage: !!s.is_image,
+        isFullWidth: !!s.is_full_width,
+        image: s.is_image ? mapMedia(s.image ?? null) : undefined,
+      })),
     };
   }
 
   async getCTA(): Promise<CtaSection> {
-    const data = await this.fetchHome();
-    const cta = data.cta;
-
+    const { cta } = await this.fetchHome();
     return {
       title: cta.title,
-      text: cta.text,
-      cta: cta.cta,
-      image: {
-        url: `${process.env.NEXT_PUBLIC_STRAPI_URL}${cta.image.url}`,
-        alt: cta.image.alt ?? "",
-        formats: Object.fromEntries(
-          Object.entries(cta.image.formats ?? {}).map(
-            ([key, value]: [string, any]) => [
-              key,
-              {
-                ...value,
-                url: `${process.env.NEXT_PUBLIC_STRAPI_URL}${value.url}`,
-              },
-            ]
-          )
-        ),
-      },
+      text: cta.text ?? "",
+      cta: mapCta(cta.cta)!,
+      image: mapMedia(cta.image),
     };
   }
 
   async getChoose(): Promise<Choose> {
-    const data = await this.fetchHome();
-    const choose = data.choose;
-
+    const { choose } = await this.fetchHome();
     return {
       title: choose.title,
-      subtitle: choose.subtitle,
-      text: choose.text,
-      cards: choose.cards?.map((card: any) => ({
-        title: card.title,
-        description: card.description,
-        image: {
-          url: `${process.env.NEXT_PUBLIC_STRAPI_URL}${card.media.url ?? ""}`,
-          alt: card.media.alt ?? "",
-          formats: Object.fromEntries(
-            Object.entries(card.media.formats ?? {}).map(
-              ([key, value]: [string, any]) => [
-                key,
-                {
-                  ...value,
-                  url: `${process.env.NEXT_PUBLIC_STRAPI_URL}${value.url}`,
-                },
-              ]
-            )
-          ),
-        },
+      subtitle: choose.subtitle ?? "",
+      text: choose.text ?? "",
+      cards:
+        choose.cards?.map((c) => ({
+          title: c.title,
+          description: c.description,
+          image: mapMedia(c.image),
+        })) ?? [],
+    };
+  }
+
+  async getFaq(): Promise<Faq> {
+    const { faq } = await this.fetchHome();
+    return {
+      title: faq.title,
+      subtitle: faq.subtitle ?? "",
+      text: faq.text ?? "",
+      questions: faq.questions.map((q) => ({
+        question: q.question,
+        answer: q.answer,
       })),
     };
   }

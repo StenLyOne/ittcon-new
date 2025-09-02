@@ -5,6 +5,8 @@
   --color-blue: #384971;
   --color-green-subtitle: #3e351f;
   --color-white-second: #f2efea;
+  --color-body-text: #716038;
+  --color-title: #4b4025;
 }
 
 body {
@@ -23,6 +25,10 @@ h2 {
 
 h3 {
   @apply text-[24px] md:text-[36px] leading-[34px] md:leading-[46px] font-medium;
+}
+
+h4 {
+  @apply text-[20px] md:text-[24px] leading-[30px] md:leading-[34px] font-medium;
 }
 
 p {
