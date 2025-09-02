@@ -10,14 +10,14 @@ export function mapFormats(f?: StrapiFormats): Media["formats"] {
   return Object.fromEntries(
     Object.entries(f).map(([k, v]) => [
       k,
-      { ...v!, url: `${BASE}${v!.url}` },
+      { ...v!, url: `${v!.url}` },
     ])
   );
 }
 
 export function mapMedia(m: StrapiMedia | undefined | null): Media {
   return {
-    url: `${BASE}${m?.url ?? ""}`,
+    url: `${m?.url ?? ""}`,
     alt: m?.alt ?? "",
     formats: mapFormats(m?.formats),
   };
