@@ -1,5 +1,5 @@
 import { getHomeData } from "./api/getApi";
-import { repos } from "../lib/repositories";
+import { StrapiGetHomePage } from "../lib/repositories/home.repo";
 import About from "./sections/About";
 import { Choose } from "./sections/Choose";
 import Cta from "./sections/Cta";
@@ -9,15 +9,18 @@ import { Service } from "./sections/Service";
 import Solutions from "./sections/Solutions";
 import { Partners } from "./sections/Partners";
 
+export const revalidate = false; 
+
 export default async function Home() {
-  const hero = await repos.hero;
-  const about = await repos.about;
-  const service = await repos.service;
-  const solutions = await repos.solutions;
-  const cta = await repos.cta;
-  const choose = await repos.choose;
-  const faq = await repos.faq;
-  const partners = await repos.partners;
+  const homeRepo = new StrapiGetHomePage();
+  const hero = await homeRepo.getHero();
+  const about = await homeRepo.getAbout();
+  const service = await homeRepo.getService();
+  const solutions = await homeRepo.getSolutions();
+  const cta = await homeRepo.getCTA();
+  const choose = await homeRepo.getChoose();
+  const faq = await homeRepo.getFaq();
+  const partners = await homeRepo.getPartners();
   getHomeData();
   return (
     <>

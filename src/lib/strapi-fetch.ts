@@ -3,15 +3,15 @@ const TOKEN = process.env.NEXT_PUBLIC_STRAPI_TOKEN!; // Read-only токен
 
 type FetchOpts = {
   tag?: string;
-  revalidate?: number; // сек; по умолчанию 60
+  //   revalidate?: number; // сек; по умолчанию 60
 };
 
 export async function fetchStrapi(path: string, opts: FetchOpts = {}) {
   const url = `${BASE}${path}`;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const next: any = {};
+
+  const next: Record<string, unknown> = {};
   if (opts.tag) next.tags = [opts.tag];
-  next.revalidate = typeof opts.revalidate === "number" ? opts.revalidate : 60;
 
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${TOKEN}` },

@@ -14,7 +14,6 @@ import { mapCta, mapMedia } from "../mappers/strapi";
 import { HOME_TAG } from "../cache-tags";
 
 export class StrapiGetHomePage {
-
   async fetch(): Promise<HomePayload> {
     const q =
       `?populate[hero][populate]=ctas` +
@@ -32,7 +31,7 @@ export class StrapiGetHomePage {
       `&populate[partners][populate]=image`;
 
     const json: { data: HomePayload } = await (
-      await fetchStrapi(`/api/home${q}`, { tag: HOME_TAG, revalidate: 600 })
+      await fetchStrapi(`/api/home${q}`, { tag: HOME_TAG })
     ).json();
     return json.data;
   }
