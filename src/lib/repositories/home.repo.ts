@@ -32,7 +32,7 @@ export class StrapiGetHomePage {
       `&populate[partners][populate]=image`;
 
     const json: { data: HomePayload } = await (
-      await fetchStrapi(`/api/home${q}`, { tag: HOME_TAG, revalidate: 60 })
+      await fetchStrapi(`/api/home${q}`, { tag: HOME_TAG, revalidate: 600 })
     ).json();
     return json.data;
   }
