@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   const body = await req.json();
   // можно добавить валидацию Zod тут
-  console.log('321')
+
   const r = await fetch(`${process.env.NEXT_PUBLIC_STRAPI_URL}/api/contact-messages`, {
     method: "POST",
     headers: {
