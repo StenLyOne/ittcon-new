@@ -1,4 +1,4 @@
-// lib/repositories/home.repo.ts
+import { fetchStrapi } from "../strapi-fetch";
 import { About } from "../models/about";
 import { CtaSection } from "../models/cta";
 import { Hero } from "../models/hero";
@@ -11,17 +11,12 @@ import { Partners } from "../models/partners";
 
 import type { HomePayload } from "../models/strapi";
 import { mapCta, mapMedia } from "../mappers/strapi";
+import { HOME_TAG } from "../cache-tags";
 
 export class StrapiGetHomePage {
-  constructor(private baseUrl: string, private token?: string) {}
 
-  private cached: HomePayload | null = null;
-
-  private async fetchHome(): Promise<HomePayload> {
-    if (this.cached) return this.cached;
-
-    const url =
-      `${this.baseUrl}/api/home` +
+  async fetch(): Promise<HomePayload> {
+    const q =
       `?populate[hero][populate]=ctas` +
       `&populate[hero][populate]=media` +
       `&populate[about][populate]=stats` +
@@ -32,30 +27,18 @@ export class StrapiGetHomePage {
       `&populate[solutions][populate]=cta` +
       `&populate[cta][populate]=image` +
       `&populate[cta][populate]=cta` +
-      `&populate[choose][populate][cards][populate]=image` +
+      `&populate[choose][populate]=cards.image` +
       `&populate[faq][populate]=questions` +
       `&populate[partners][populate]=image`;
 
-    const res = await fetch(url, {
-      headers: this.token ? { Authorization: `Bearer ${this.token}` } : {},
-      next: { revalidate: 60 },
-    });
-
-    if (!res.ok) {
-      const body = await res.text().catch(() => "");
-      throw new Error(
-        `Strapi ${res.status} ${res.statusText}\nURL: ${res.url}\nBody: ${body}`
-      );
-    }
-
-    // типизируем ответ
-    const json: { data: HomePayload } = await res.json();
-    this.cached = json.data;
-    return this.cached;
+    const json: { data: HomePayload } = await (
+      await fetchStrapi(`/api/home${q}`, { tag: HOME_TAG, revalidate: 60 })
+    ).json();
+    return json.data;
   }
 
   async getHero(): Promise<Hero> {
-    const { hero: h } = await this.fetchHome();
+    const { hero: h } = await this.fetch();
     return {
       title: h.title,
       subtitle: h.subtitle ?? "",
@@ -66,14 +49,14 @@ export class StrapiGetHomePage {
   }
 
   async getPartners(): Promise<Partners> {
-    const { partners } = await this.fetchHome();
+    const { partners } = await this.fetch();
     return {
       images: partners?.image?.map((p) => mapMedia(p)) ?? [],
     };
   }
 
   async getAbout(): Promise<About> {
-    const { about } = await this.fetchHome();
+    const { about } = await this.fetch();
     return {
       title: about.title,
       subtitle: about.subtitle ?? "",
@@ -88,7 +71,7 @@ export class StrapiGetHomePage {
   }
 
   async getService(): Promise<Service> {
-    const { services: s } = await this.fetchHome();
+    const { services: s } = await this.fetch();
     return {
       title: s.title,
       subtitle: s.subtitle ?? "",
@@ -103,7 +86,7 @@ export class StrapiGetHomePage {
   }
 
   async getSolutions(): Promise<Solutions> {
-    const { solutions } = await this.fetchHome();
+    const { solutions } = await this.fetch();
     return {
       blocks: solutions.map((s) => ({
         title: s.title,
@@ -117,7 +100,7 @@ export class StrapiGetHomePage {
   }
 
   async getCTA(): Promise<CtaSection> {
-    const { cta } = await this.fetchHome();
+    const { cta } = await this.fetch();
     return {
       title: cta.title,
       text: cta.text ?? "",
@@ -127,7 +110,7 @@ export class StrapiGetHomePage {
   }
 
   async getChoose(): Promise<Choose> {
-    const { choose } = await this.fetchHome();
+    const { choose } = await this.fetch();
     return {
       title: choose.title,
       subtitle: choose.subtitle ?? "",
@@ -142,7 +125,7 @@ export class StrapiGetHomePage {
   }
 
   async getFaq(): Promise<Faq> {
-    const { faq } = await this.fetchHome();
+    const { faq } = await this.fetch();
     return {
       title: faq.title,
       subtitle: faq.subtitle ?? "",

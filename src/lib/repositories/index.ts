@@ -1,9 +1,6 @@
 import { StrapiGetHomePage } from "./home.repo";
 
-const homeRepo = new StrapiGetHomePage(
-  process.env.NEXT_PUBLIC_STRAPI_URL!,
-  process.env.NEXT_PUBLIC_STRAPI_TOKEN
-);
+const homeRepo = new StrapiGetHomePage();
 
 export const repos = {
   hero: homeRepo.getHero(),
